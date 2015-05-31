@@ -1,4 +1,8 @@
 # A sample Gemfile
 source "https://rubygems.org"
 
-# gem "rails"
+gem 'spotify-client'
+
+group :development do
+  gem 'pry'
+end
