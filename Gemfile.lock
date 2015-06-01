@@ -2,6 +2,7 @@ GEM
   remote: https://rubygems.org/
   specs:
     coderay (1.1.0)
+    colorize (0.7.7)
     excon (0.45.3)
     method_source (0.8.2)
     pry (0.10.1)
@@ -16,5 +17,6 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  colorize
   pry
   spotify-client
