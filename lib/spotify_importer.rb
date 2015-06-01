@@ -8,19 +8,17 @@ class SpotifyImporter
 
     collection.each_with_index do |row, index|
       record = CollectionRecord.new(row)
-      results = client.search(:track, format_query(record))
+      results = SpotifyMatch.new(client.search(:track, format_query(record)))
 
-      if results['tracks']['items'].count > 0
-        info = "#{results["tracks"]["items"].first["name"]} - #{results["tracks"]['items'].first['artist'['name']]} - #{results ["tracks"]["items"].first["uri"]}"
-
+      if results.found_match?
         if full_match(results, record)
-          puts info.green
+          puts results.to_s.green
         elsif name_match(results, record)
-          puts info.yellow
+          puts results.to_s.yellow
         elsif album_match(results, record)
-          puts info.colorize(:orange)
+          puts results.to_s.colorize(:orange)
         else
-          puts info
+          puts results
         end
       else
         puts "not found - #{record.name} - #{record.artist}".red
@@ -34,12 +32,12 @@ class SpotifyImporter
   end
 
   def name_match(results, record)
-    results["tracks"]["items"].first["name"] == record.name
+    results.name == record.name
   end
 
   def album_match(results, record)
     # require 'pry' ; binding.pry
-    results["tracks"]["items"].first["album"]["name"] == record.album
+    results.album == record.album
   end
 
   def format_query(record)
@@ -67,5 +65,36 @@ class CollectionRecord
 
   def album
     @row['Album']
+  end
+
+end
+
+class SpotifyMatch
+  def initialize(results)
+    @results = results
+  end
+
+  def found_match?
+    @results['tracks']['items'].count > 0
+  end
+
+  def name
+    @results["tracks"]["items"].first["name"]
+  end
+
+  def artist
+    @results["tracks"]['items'].first['artists'].first['name']
+  end
+
+  def album
+    @results["tracks"]['items'].first['album']['name']
+  end
+
+  def uri
+    @results ["tracks"]["items"].first["uri"]
+  end
+
+  def to_s
+    "#{name} - #{album} - #{artist} = #{uri}"
   end
 end
