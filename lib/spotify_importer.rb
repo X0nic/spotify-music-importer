@@ -7,15 +7,16 @@ class SpotifyImporter
     collection = CSV.read(filename, :headers => true)
 
     collection.each_with_index do |row, index|
-      record = CollectionRecord.new(row)
-      results = SpotifyMatch.new(client.search(:track, format_query(record)))
+      record = CollectionRecord.new(row, :clean_album => true)
+      results = SpotifyMatch.new(client.search(:track, format_query(record)), :clean_album => true)
+      match = CollectionMatch.new(record, results)
 
       if results.found_match?
-        if full_match(results, record)
+        if match.full_match
           puts results.to_s.green
-        elsif name_match(results, record)
+        elsif match.name_match
           puts results.to_s.yellow
-        elsif album_match(results, record)
+        elsif match.album_match
           puts results.to_s.colorize(:orange)
         else
           puts results
@@ -25,19 +26,6 @@ class SpotifyImporter
       end
 
     end
-  end
-
-  def full_match(results, record)
-    name_match(results, record) && album_match(results, record)
-  end
-
-  def name_match(results, record)
-    results.name == record.name
-  end
-
-  def album_match(results, record)
-    # require 'pry' ; binding.pry
-    results.album == record.album
   end
 
   def format_query(record)
@@ -50,9 +38,29 @@ class SpotifyImporter
 
 end
 
+class CollectionMatch
+  def initialize(collection_record, spotify_match)
+    @collection_record = collection_record
+    @spotify_match = spotify_match
+  end
+
+  def full_match
+    name_match && album_match
+  end
+
+  def name_match
+    @collection_record.name == @spotify_match.name
+  end
+
+  def album_match
+    @collection_record.album == @spotify_match.album
+  end
+end
+
 class CollectionRecord
-  def initialize(row)
+  def initialize(row, options = {})
     @row = row
+    @clean_album = options.delete(:clean_album) { false }
   end
 
   def name
@@ -60,18 +68,27 @@ class CollectionRecord
   end
 
   def artist
-    @row['Artist']
+    if @clean_album
+      @row['Artist'].gsub('(Special Edition)', '').strip
+    else
+      @row['Artist']
+    end
   end
 
   def album
-    @row['Album']
+    if @clean_album
+      @row['Album'].gsub('(Special Edition)', '').strip
+    else
+      @row['Album']
+    end
   end
 
 end
 
 class SpotifyMatch
-  def initialize(results)
+  def initialize(results, options = {})
     @results = results
+    @clean_album = options.delete(:clean_album) { false }
   end
 
   def found_match?
@@ -87,7 +104,11 @@ class SpotifyMatch
   end
 
   def album
-    @results["tracks"]['items'].first['album']['name']
+    if @clean_album
+      @results["tracks"]['items'].first['album']['name'].gsub('(Special Edition)', '').strip
+    else
+      @results["tracks"]['items'].first['album']['name']
+    end
   end
 
   def uri
