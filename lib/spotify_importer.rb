@@ -18,8 +18,10 @@ class SpotifyImporter
           puts results.to_s.yellow
         elsif match.album_match
           puts results.to_s.colorize(:orange)
+          puts "Collection Record: #{record}"
         else
           puts results
+          puts "Collection Record: #{record}"
         end
       else
         puts "not found - #{record.name} - #{record.artist}".red
@@ -77,10 +79,14 @@ class CollectionRecord
 
   def album
     if @clean_album
-      @row['Album'].gsub('(Special Edition)', '').strip
+      AlbumNameCleaner.new(@row['Album']).clean
     else
       @row['Album']
     end
+  end
+
+  def to_s
+    "Name: #{name} Album: #{album} Artist: #{artist}"
   end
 
 end
@@ -105,7 +111,7 @@ class SpotifyMatch
 
   def album
     if @clean_album
-      @results["tracks"]['items'].first['album']['name'].gsub('(Special Edition)', '').strip
+      AlbumNameCleaner.new(@results["tracks"]['items'].first['album']['name']).clean
     else
       @results["tracks"]['items'].first['album']['name']
     end
@@ -116,6 +122,31 @@ class SpotifyMatch
   end
 
   def to_s
-    "#{name} - #{album} - #{artist} = #{uri}"
+    "Name: #{name} Album: #{album} Artist: #{artist} uri: #{uri}"
+  end
+end
+
+class AlbumNameCleaner
+  def initialize(album_name)
+    @album_name = album_name
+  end
+
+  def clean
+    cleaned_album = @album_name
+
+    extraneous_album_info.each do |album_info|
+      cleaned_album = cleaned_album.gsub(album_info, '').strip
+    end
+
+    cleaned_album
+  end
+
+  def extraneous_album_info
+    [
+      '(Special Edition)',
+      '(Deluxe Edition)',
+      '(Deluxe Edition Remastered)',
+      '(Remastered)'
+    ]
   end
 end
