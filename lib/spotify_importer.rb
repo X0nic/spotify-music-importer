@@ -3,6 +3,10 @@ require 'csv'
 require 'spotify-client'
 
 class SpotifyImporter
+  def initialize
+    @missing = []
+  end
+
   def import(filename)
     collection = CSV.read(filename, :headers => true)
 
@@ -24,10 +28,15 @@ class SpotifyImporter
           puts "Collection Record: #{record}"
         end
       else
-        puts "not found - #{record.name} - #{record.artist}".red
+        puts "not found - #{record}".red
+        @missing << record
       end
 
     end
+  end
+
+  def missing
+    @missing
   end
 
   def format_query(record)
@@ -94,6 +103,9 @@ class CollectionRecord
     "Name: #{name} Album: #{album} Artist: #{artist}"
   end
 
+  def to_json(options = {})
+    { :name => name, :album => album, :artist => artist }.to_json(options)
+  end
 end
 
 class SpotifyMatch

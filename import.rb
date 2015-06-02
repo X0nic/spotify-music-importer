@@ -13,7 +13,18 @@ OptionParser.new do |opts|
     options[:filename] = filename
   end
 
+  opts.on("-m", "--missing MISSING.json", "The output filename of bad matches") do |missing|
+    options[:missing] = missing
+  end
 
 end.parse!
 
-SpotifyImporter.new.import(options[:filename])
+importer = SpotifyImporter.new
+importer.import(options[:filename])
+
+if options[:missing]
+  File.open(options[:missing], 'w') do |f|
+    puts "Writing to file #{options[:missing]}"
+    f.write(JSON.pretty_generate(importer.missing))
+  end
+end
