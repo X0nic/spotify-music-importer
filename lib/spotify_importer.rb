@@ -171,7 +171,8 @@ class AlbumNameCleaner
       '(Remastered)',
       '(Canadian Version)',
       '(Non EU Version)',
-      '(UK Version)'
+      '(UK Version)',
+      '(Brazilian Version)'
     ]
   end
 end
@@ -197,7 +198,8 @@ class TrackNameCleaner
       '- Single',
       '(Clean Album Version) (Clean)',
       '(Album Version)',
-      '(Amended Album Version)'
+      '(Amended Album Version)',
+      '(Explicit Album Version)'
     ]
   end
 end
