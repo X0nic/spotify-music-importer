@@ -7,8 +7,8 @@ class SpotifyImporter
     collection = CSV.read(filename, :headers => true)
 
     collection.each_with_index do |row, index|
-      record = CollectionRecord.new(row, :clean_album => true)
-      results = SpotifyMatch.new(client.search(:track, format_query(record)), :clean_album => true)
+      record = CollectionRecord.new(row, :clean_album => true, :clean_track => true)
+      results = SpotifyMatch.new(client.search(:track, format_query(record)), :clean_album => true, :clean_track => true)
       match = CollectionMatch.new(record, results)
 
       if results.found_match?
@@ -63,10 +63,15 @@ class CollectionRecord
   def initialize(row, options = {})
     @row = row
     @clean_album = options.delete(:clean_album) { false }
+    @clean_track = options.delete(:clean_track) { false }
   end
 
   def name
-    @row['Name']
+    if @clean_track
+      TrackNameCleaner.new(@row['Name']).clean
+    else
+      @row['Name']
+    end
   end
 
   def artist
@@ -95,6 +100,7 @@ class SpotifyMatch
   def initialize(results, options = {})
     @results = results
     @clean_album = options.delete(:clean_album) { false }
+    @clean_track = options.delete(:clean_track) { false }
   end
 
   def found_match?
@@ -102,7 +108,11 @@ class SpotifyMatch
   end
 
   def name
-    @results["tracks"]["items"].first["name"]
+    if @clean_track
+      TrackNameCleaner.new(@results["tracks"]["items"].first["name"]).clean
+    else
+      @results["tracks"]["items"].first["name"]
+    end
   end
 
   def artist
@@ -146,7 +156,36 @@ class AlbumNameCleaner
       '(Special Edition)',
       '(Deluxe Edition)',
       '(Deluxe Edition Remastered)',
-      '(Remastered)'
+      '(Remastered)',
+      '(Canadian Version)',
+      '(Non EU Version)',
+      '(UK Version)'
+    ]
+  end
+end
+
+class TrackNameCleaner
+  def initialize(track_name)
+    @track_name = track_name
+  end
+
+  def clean
+    cleaned_track = @track_name
+
+    extraneous_track_info.each do |track_info|
+      cleaned_track = cleaned_track.gsub(track_info, '').strip
+    end
+
+    cleaned_track
+  end
+
+  def extraneous_track_info
+    [
+      '- Remastered',
+      '- Single',
+      '(Clean Album Version) (Clean)',
+      '(Album Version)',
+      '(Amended Album Version)'
     ]
   end
 end
