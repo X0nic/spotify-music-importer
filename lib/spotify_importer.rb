@@ -17,14 +17,18 @@ class SpotifyImporter
 
       if results.found_match?
         if match.full_match
-          puts results.to_s.green
+          print results.to_s.green
+          add_to_library(results.id)
         elsif match.name_match
-          puts results.to_s.yellow
+          print results.to_s.yellow
+          add_to_library(results.id)
         elsif match.album_match
-          puts results.to_s.colorize(:orange)
+          print results.to_s.colorize(:orange)
+          add_to_library(results.id)
           puts "Collection Record: #{record}"
         else
-          puts results
+          print results
+          add_to_library(results.id)
           puts "Collection Record: #{record}"
         end
       else
@@ -39,12 +43,22 @@ class SpotifyImporter
     @missing
   end
 
+  def add_to_library(track_id)
+    if client.library?(track_id).first
+      puts " Ignored #{track_id}"
+    else
+      print ' Adding '
+      client.add_library_tracks(track_id)
+      puts " Added #{track_id}"
+    end
+  end
+
   def format_query(record)
     "track:#{record.name} artist:#{record.artist} album:#{record.album}"
   end
 
   def client
-    Spotify::Client.new(:raise_errors => true)
+    @client ||= Spotify::Client.new(:raise_errors => true, :access_token => ENV['SPOTIFY_ACCESS_TOKEN'])
   end
 
 end
@@ -139,12 +153,12 @@ class SpotifyMatch
     end
   end
 
-  def uri
-    @results ["tracks"]["items"].first["uri"]
+  def id
+    @results ["tracks"]["items"].first["id"]
   end
 
   def to_s
-    "Name: #{name} Album: #{album} Artist: #{artist} uri: #{uri}"
+    "Name: #{name} Album: #{album} Artist: #{artist} id: #{id}"
   end
 end
 
