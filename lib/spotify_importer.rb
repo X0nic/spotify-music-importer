@@ -44,7 +44,7 @@ class SpotifyImporter
   end
 
   def client
-    Spotify::Client.new
+    Spotify::Client.new(:raise_errors => true)
   end
 
 end
