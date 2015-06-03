@@ -1,3 +1,11 @@
+GIT
+  remote: git://github.com/X0nic/spotify-client.git
+  revision: 8604460614404ec38dc4f5f8ff34fbe09ad1fb18
+  branch: add-library
+  specs:
+    spotify-client (0.0.8)
+      excon (~> 0.37)
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -10,8 +18,6 @@ GEM
       method_source (~> 0.8.1)
       slop (~> 3.4)
     slop (3.6.0)
-    spotify-client (0.0.8)
-      excon (~> 0.37)
 
 PLATFORMS
   ruby
@@ -19,4 +25,4 @@ PLATFORMS
 DEPENDENCIES
   colorize
   pry
-  spotify-client
+  spotify-client!
