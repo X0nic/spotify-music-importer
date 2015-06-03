@@ -21,6 +21,10 @@ OptionParser.new do |opts|
     options[:limit] = limit.to_i
   end
 
+  opts.on("-s", "--skip SKIP", "Skip the first X lines of import") do |skip|
+    options[:skip] = skip.to_i
+  end
+
 end.parse!
 
 importer = SpotifyImporter.new

@@ -9,11 +9,13 @@ class SpotifyImporter
 
   def import(filename, options)
     limit = options.delete(:limit) { nil }
+    skip  = options.delete(:skip) { 0 }
 
     collection = CSV.read(filename, :headers => true)
 
     collection.each_with_index do |row, index|
-      break if limit && index+1 > limit
+      next if skip && skip > index+1
+      break if limit && index+1 > limit+skip
 
       record = CollectionRecord.new(row, :clean_album => true, :clean_track => true)
       results = SpotifyMatch.new(client.search(:track, format_query(record)), :clean_album => true, :clean_track => true)
