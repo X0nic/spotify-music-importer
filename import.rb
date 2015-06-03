@@ -17,10 +17,14 @@ OptionParser.new do |opts|
     options[:missing] = missing
   end
 
+  opts.on("-l", "--limit LIMIT", "Limit the number of lines to import") do |limit|
+    options[:limit] = limit.to_i
+  end
+
 end.parse!
 
 importer = SpotifyImporter.new
-importer.import(options[:filename])
+importer.import(options[:filename], options)
 
 if options[:missing]
   File.open(options[:missing], 'w') do |f|

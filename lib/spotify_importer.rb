@@ -7,15 +7,20 @@ class SpotifyImporter
     @missing = []
   end
 
-  def import(filename)
+  def import(filename, options)
+    limit = options.delete(:limit) { nil }
+
     collection = CSV.read(filename, :headers => true)
 
     collection.each_with_index do |row, index|
+      break if limit && index+1 > limit
+
       record = CollectionRecord.new(row, :clean_album => true, :clean_track => true)
       results = SpotifyMatch.new(client.search(:track, format_query(record)), :clean_album => true, :clean_track => true)
       match = CollectionMatch.new(record, results)
 
       if results.found_match?
+        print "[#{index+1}] "
         if match.full_match
           print results.to_s.green
           add_to_library(results.id)
