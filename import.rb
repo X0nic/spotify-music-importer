@@ -25,6 +25,10 @@ OptionParser.new do |opts|
     options[:skip] = skip.to_i
   end
 
+  opts.on("-t", "--access-token ACCESS_TOKEN", "Your access token to access the Spotify API") do |token|
+    options[:access_token] = token
+  end
+
 end.parse!
 
 importer = SpotifyImporter.new

@@ -11,6 +11,8 @@ class SpotifyImporter
     limit = options.delete(:limit) { nil }
     skip  = options.delete(:skip) { 0 }
 
+    @options = options
+
     collection = CSV.read(filename, :headers => true)
 
     collection.each_with_index do |row, index|
@@ -65,7 +67,13 @@ class SpotifyImporter
   end
 
   def client
-    @client ||= Spotify::Client.new(:raise_errors => true, :access_token => ENV['SPOTIFY_ACCESS_TOKEN'])
+    @client ||= begin
+                  if @options[:access_token]
+                    Spotify::Client.new({:raise_errors => true}.merge(@options))
+                  else
+                    Spotify::Client.new(:raise_errors => true)
+                  end
+                end
   end
 
 end
