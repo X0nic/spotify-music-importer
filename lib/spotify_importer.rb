@@ -3,63 +3,25 @@ require 'csv'
 require 'spotify-client'
 
 class SpotifyImporter
-  def initialize
-    @missing = []
-  end
-
   def import(filename, options)
+    @options = options
+    @library = SpotifyLibrary.new(client)
     limit = options.delete(:limit) { nil }
     skip  = options.delete(:skip) { 0 }
 
-    @options = options
-
     collection = CSV.read(filename, :headers => true)
-
     collection.each_with_index do |row, index|
       next if skip && skip > index+1
       break if limit && index+1 > limit+skip
 
       record = CollectionRecord.new(row, :clean_album => true, :clean_track => true)
       results = SpotifyMatch.new(client.search(:track, format_query(record)), :clean_album => true, :clean_track => true)
-      match = CollectionMatch.new(record, results)
-
-      if results.found_match?
-        print "[#{index+1}] "
-        if match.full_match
-          print results.to_s.green
-          add_to_library(results.id)
-        elsif match.name_match
-          print results.to_s.yellow
-          add_to_library(results.id)
-        elsif match.album_match
-          print results.to_s.colorize(:orange)
-          add_to_library(results.id)
-          puts "Collection Record: #{record}"
-        else
-          print results
-          add_to_library(results.id)
-          puts "Collection Record: #{record}"
-        end
-      else
-        puts "not found - #{record}".red
-        @missing << record
-      end
-
+      @library.find_and_add_to_library(record, results, index)
     end
   end
 
   def missing
-    @missing
-  end
-
-  def add_to_library(track_id)
-    if client.library?(track_id).first
-      puts " Ignored #{track_id}"
-    else
-      print ' Adding '
-      client.add_library_tracks(track_id)
-      puts " Added #{track_id}"
-    end
+    @library.missing
   end
 
   def format_query(record)
@@ -230,5 +192,54 @@ class TrackNameCleaner
       '(Amended Album Version)',
       '(Explicit Album Version)'
     ]
+  end
+end
+
+class SpotifyLibrary
+  def initialize(client)
+    @client = client
+    @missing = []
+  end
+
+  def find_and_add_to_library(record, results, index)
+    match = CollectionMatch.new(record, results)
+
+    if results.found_match?
+      print "[#{index+1}] "
+      if match.full_match
+        print results.to_s.green
+        add_to_library(results.id)
+      elsif match.name_match
+        print results.to_s.yellow
+        add_to_library(results.id)
+      elsif match.album_match
+        print results.to_s.colorize(:orange)
+        add_to_library(results.id)
+        puts "Collection Record: #{record}"
+      else
+        print results
+        add_to_library(results.id)
+        puts "Collection Record: #{record}"
+      end
+    else
+      puts "not found - #{record}".red
+      @missing << record
+    end
+  end
+
+  def missing
+    @missing
+  end
+
+  private
+
+  def add_to_library(track_id)
+    if @client.library?(track_id).first
+      puts " Ignored #{track_id}"
+    else
+      print ' Adding '
+      @client.add_library_tracks(track_id)
+      puts " Added #{track_id}"
+    end
   end
 end
