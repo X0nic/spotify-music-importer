@@ -3,7 +3,7 @@
 $:.unshift File.join(File.dirname(__FILE__), *%w[.. lib])
 
 require 'optparse'
-require 'spotify_importer'
+require 'spotify/music/importer'
 
 options = {}
 OptionParser.new do |opts|
@@ -31,7 +31,7 @@ OptionParser.new do |opts|
 
 end.parse!
 
-importer = SpotifyImporter.new
+importer = Spotify::Music::Importer::Cli.new
 importer.import(options[:filename], options)
 
 if options[:missing]

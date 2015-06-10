@@ -1,45 +1,3 @@
-require 'colorize'
-require 'csv'
-require 'spotify-client'
-
-class SpotifyImporter
-  def import(filename, options)
-    @options = options
-    @library = SpotifyLibrary.new(client)
-    limit = options.delete(:limit) { nil }
-    skip  = options.delete(:skip) { 0 }
-
-    collection = CSV.read(filename, :headers => true)
-    collection.each_with_index do |row, index|
-      next if skip && skip > index+1
-      break if limit && index+1 > limit+skip
-
-      record = CollectionRecord.new(row, :clean_album => true, :clean_track => true)
-      results = SpotifyMatch.new(client.search(:track, format_query(record)), :clean_album => true, :clean_track => true)
-      @library.find_and_add_to_library(record, results, index)
-    end
-  end
-
-  def missing
-    @library.missing
-  end
-
-  def format_query(record)
-    "track:#{record.name} artist:#{record.artist} album:#{record.album}"
-  end
-
-  def client
-    @client ||= begin
-                  if @options[:access_token]
-                    Spotify::Client.new({:raise_errors => true}.merge(@options))
-                  else
-                    Spotify::Client.new(:raise_errors => true)
-                  end
-                end
-  end
-
-end
-
 class CollectionMatch
   def initialize(collection_record, spotify_match)
     @collection_record = collection_record
@@ -59,45 +17,6 @@ class CollectionMatch
   end
 end
 
-class CollectionRecord
-  def initialize(row, options = {})
-    @row = row
-    @clean_album = options.delete(:clean_album) { false }
-    @clean_track = options.delete(:clean_track) { false }
-  end
-
-  def name
-    if @clean_track
-      TrackNameCleaner.new(@row['Name']).clean
-    else
-      @row['Name']
-    end
-  end
-
-  def artist
-    if @clean_album
-      @row['Artist'].gsub('(Special Edition)', '').strip
-    else
-      @row['Artist']
-    end
-  end
-
-  def album
-    if @clean_album
-      AlbumNameCleaner.new(@row['Album']).clean
-    else
-      @row['Album']
-    end
-  end
-
-  def to_s
-    "Name: #{name} Album: #{album} Artist: #{artist}"
-  end
-
-  def to_json(options = {})
-    { :name => name, :album => album, :artist => artist }.to_json(options)
-  end
-end
 
 class SpotifyMatch
   def initialize(results, options = {})
@@ -195,51 +114,3 @@ class TrackNameCleaner
   end
 end
 
-class SpotifyLibrary
-  def initialize(client)
-    @client = client
-    @missing = []
-  end
-
-  def find_and_add_to_library(record, results, index)
-    match = CollectionMatch.new(record, results)
-
-    if results.found_match?
-      print "[#{index+1}] "
-      if match.full_match
-        print results.to_s.green
-        add_to_library(results.id)
-      elsif match.name_match
-        print results.to_s.yellow
-        add_to_library(results.id)
-      elsif match.album_match
-        print results.to_s.colorize(:orange)
-        add_to_library(results.id)
-        puts "Collection Record: #{record}"
-      else
-        print results
-        add_to_library(results.id)
-        puts "Collection Record: #{record}"
-      end
-    else
-      puts "not found - #{record}".red
-      @missing << record
-    end
-  end
-
-  def missing
-    @missing
-  end
-
-  private
-
-  def add_to_library(track_id)
-    if @client.library?(track_id).first
-      puts " Ignored #{track_id}"
-    else
-      print ' Adding '
-      @client.add_library_tracks(track_id)
-      puts " Added #{track_id}"
-    end
-  end
-end
