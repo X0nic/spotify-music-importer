@@ -1,4 +1,6 @@
 require "spotify/music/importer/version"
+require 'spotify/music/importer/track_name_cleaner'
+require 'spotify/music/importer/album_name_cleaner'
 
 module Spotify::Music::Importer
   class CollectionRecord

@@ -1,4 +1,5 @@
 require "spotify/music/importer/version"
+require "spotify/music/importer/collection_match"
 
 module Spotify::Music::Importer
   class SpotifyLibrary

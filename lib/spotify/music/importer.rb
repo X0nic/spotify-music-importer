@@ -1,5 +1,6 @@
-require "spotify/music/importer/spotify_library"
-require "spotify/music/importer/collection_record"
+require 'spotify/music/importer/spotify_library'
+require 'spotify/music/importer/collection_record'
+require 'spotify/music/importer/spotify_match'
 
 require 'colorize'
 require 'csv'
