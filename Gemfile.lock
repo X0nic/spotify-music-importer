@@ -9,7 +9,7 @@ GIT
 PATH
   remote: .
   specs:
-    spotify-music-importer (0.0.1)
+    spotify-music-importer (0.0.2)
       colorize
       spotify-client
 
