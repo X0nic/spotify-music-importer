@@ -10,6 +10,8 @@ PATH
   remote: .
   specs:
     spotify-music-importer (0.0.1)
+      colorize
+      spotify-client
 
 GEM
   remote: https://rubygems.org/
@@ -30,7 +32,6 @@ PLATFORMS
 
 DEPENDENCIES
   bundler (~> 1.7)
-  colorize
   pry
   rake (~> 10.0)
   spotify-client!
