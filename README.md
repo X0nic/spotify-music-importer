@@ -9,7 +9,7 @@ If you want to import your library of music into spotify, this will help. It use
 ## Usage
 
 ```sh
-bundle exec ./import.rb -f CSV_FILE -t SPOTIFY_ACCESS_TOKEN
+bundle exec spotify-music-importer -f CSV_FILE -t SPOTIFY_ACCESS_TOKEN
 ```
 
 ## Contributing
