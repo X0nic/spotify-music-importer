@@ -24,4 +24,5 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency 'spotify-client'
   spec.add_dependency 'colorize'
+  spec.add_dependency 'thor'
 end

@@ -6,19 +6,16 @@ require 'colorize'
 require 'csv'
 require 'spotify-client'
 
-
 module Spotify
   module Music
     module Importer
-      class Cli
-        def initialize
-        end
-
+      class Processor
         def import(filename, options)
-          @options = options
+          @options = options.dup
           @library = SpotifyLibrary.new(client)
-          limit = options.delete(:limit) { nil }
-          skip  = options.delete(:skip) { 0 }
+          require 'pry' ; binding.pry
+          limit = options.fetch(:limit) { nil }
+          skip  = options.fetch(:skip) { 0 }
 
           collection = CSV.read(filename, :headers => true)
           collection.each_with_index do |row, index|
