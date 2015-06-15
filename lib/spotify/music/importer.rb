@@ -26,6 +26,13 @@ module Spotify
             results = SpotifyMatch.new(client.search(:track, format_query(record)), :clean_album => true, :clean_track => true)
             @library.find_and_add_to_library(record, results, index)
           end
+
+          if options[:missing]
+            File.open(options[:missing], 'w') do |f|
+              puts "Writing to file #{options[:missing]}"
+              f.write(JSON.pretty_generate(importer.missing))
+            end
+          end
         end
 
         def missing

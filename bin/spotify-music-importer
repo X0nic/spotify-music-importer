@@ -13,13 +13,6 @@ class Spotify::Music::Importer::CLI < Thor
   def import
     importer = Spotify::Music::Importer::Processor.new
     importer.import(options[:filename], options)
-
-    if options[:missing]
-      File.open(options[:missing], 'w') do |f|
-        puts "Writing to file #{options[:missing]}"
-        f.write(JSON.pretty_generate(importer.missing))
-      end
-    end
   end
 end
 
