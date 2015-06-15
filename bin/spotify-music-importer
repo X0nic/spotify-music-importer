@@ -3,39 +3,12 @@
 require 'thor'
 require 'spotify/music/importer'
 
-# options = {}
-# OptionParser.new do |opts|
-#   opts.banner = "Usage: import.rb [options]"
-#
-#   opts.on("-f", "--file FILENAME", "The filename to import") do |filename|
-#     options[:filename] = filename
-#   end
-#
-#   opts.on("-m", "--missing MISSING.json", "The output filename of bad matches") do |missing|
-#     options[:missing] = missing
-#   end
-#
-#   opts.on("-l", "--limit LIMIT", "Limit the number of lines to import") do |limit|
-#     options[:limit] = limit.to_i
-#   end
-#
-#   opts.on("-s", "--skip SKIP", "Skip the first X lines of import") do |skip|
-#     options[:skip] = skip.to_i
-#   end
-#
-#   opts.on("-t", "--access-token ACCESS_TOKEN", "Your access token to access the Spotify API. Find one here: https://developer.spotify.com/web-api/console/") do |token|
-#     options[:access_token] = token
-#   end
-#
-# end.parse!
-#
-
 class Spotify::Music::Importer::CLI < Thor
-  option :filename, :required => true, :aliases => :f
-  option :missing, :aliases => :m
-  option :limit, :aliases => :l
-  option :skip, :aliases => :s, :default => 0
-  option :access_token, :required => true, :aliases => :t
+  option :filename, :required => true, :aliases => :f, :desc => "The filename to import"
+  option :missing, :aliases => :m, :desc =>  'The output filename of bad matches'
+  option :limit, :aliases => :l, :desc => "Limit the number of lines to import"
+  option :skip, :aliases => :s, :default => 0, :desc => "Skip the first X lines of import"
+  option :access_token, :required => true, :aliases => :t, :desc => "Your access token to access the Spotify API. Find one here: https://developer.spotify.com/web-api/console/"
   desc 'import', "Import your music library into spotify"
   def import
     importer = Spotify::Music::Importer::Processor.new
